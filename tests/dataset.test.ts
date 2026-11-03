@@ -1,0 +1,15 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import fs from "node:fs/promises";
+import JSZip from "jszip";
+
+const base=process.env.TEST_BASE_URL||"http://localhost:3000";
+const email=process.env.TEST_CONTRIBUTOR_EMAIL;
+const password=process.env.TEST_CONTRIBUTOR_PASSWORD;
+async function contributorCookie(){if(!email||!password)return null;const form=new FormData();form.set("email",email);form.set("password",password);const response=await fetch(`${base}/api/auth/login`,{method:"POST",body:form,headers:{Origin:base},redirect:"manual"});assert.equal(response.status,303,"test contributor must sign in");return response.headers.getSetCookie()[0]?.split(";")[0];}
+
+test("training archive JSON is valid, paths exist, splits are disjoint and answers match short names",{skip:!email||!password},async()=>{const cookie=await contributorCookie();const response=await fetch(`${base}/api/download?format=training`,{headers:{Cookie:cookie!}});assert.equal(response.status,200);const zip=await JSZip.loadAsync(await response.arrayBuffer());const splitIds=new Set<string>();for(const split of ["train","val","test"]){const entry=zip.file(`covt_${split}.json`);assert.ok(entry,`missing covt_${split}.json`);const items=JSON.parse(await entry.async("string")) as {id:string;image:string;short_name:string;conversations:{from:string;value:string}[]}[];for(const item of items){assert.ok(zip.file(item.image),`missing exported image ${item.image}`);assert.ok(!splitIds.has(item.id),`image ${item.id} appears in more than one split`);splitIds.add(item.id);const answer=item.conversations.find(c=>c.from==="gpt")?.value||"";assert.equal(answer,`This is the ${item.short_name}.`);}}});
+
+test("a near-duplicate upload is rejected",{skip:!email||!password||!process.env.TEST_SPECIES_ID||!process.env.TEST_DUPLICATE_FILE},async()=>{const cookie=await contributorCookie();const bytes=await fs.readFile(process.env.TEST_DUPLICATE_FILE!);const form=new FormData();form.set("speciesId",process.env.TEST_SPECIES_ID!);form.append("files",new Blob([bytes],{type:"image/jpeg"}),"known-duplicate.jpg");const response=await fetch(`${base}/api/images`,{method:"POST",headers:{Cookie:cookie!,Origin:base},body:form});assert.equal(response.status,200);const result=await response.json() as {results:{ok?:boolean;error?:string}[]};assert.equal(result.results[0]?.ok,undefined);assert.match(result.results[0]?.error||"",/duplicate/i);});
+
+test("contributors cannot delete columns or permanently delete records",{skip:!email||!password},async()=>{const cookie=await contributorCookie();const column=await fetch(`${base}/api/columns`,{method:"DELETE",headers:{Cookie:cookie!,Origin:base,"Content-Type":"application/json"},body:JSON.stringify({id:process.env.TEST_CORE_COLUMN_ID||"core-category"})});assert.equal(column.status,403);const purge=await fetch(`${base}/api/admin/records`,{method:"POST",headers:{Cookie:cookie!,Origin:base,"Content-Type":"application/json"},body:JSON.stringify({action:"hardDeleteImage",id:"test-deleted-image"})});assert.equal(purge.status,403);});
