@@ -1,0 +1,7 @@
+fish_covt_dataset/
+tests/
+scripts/
+docker-compose.yml
+Dockerfile
+.pnpm-store/
+import-report.json

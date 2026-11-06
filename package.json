@@ -1,0 +1,50 @@
+{
+  "name": "ugethnofish-dataset",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "prisma generate && next build",
+    "start": "next start",
+    "db:migrate": "prisma migrate dev",
+    "db:deploy": "prisma migrate deploy",
+    "db:seed": "tsx --env-file=.env prisma/seed.ts",
+    "import:dataset": "tsx --env-file=.env scripts/import-dataset.ts",
+    "test": "node --import tsx --test tests/security.test.ts tests/dataset.test.ts",
+    "verify:dataset": "node --import tsx --test tests/security.test.ts tests/dataset.test.ts",
+    "lint": "eslint .",
+    "postinstall": "prisma generate",
+    "vercel-build": "prisma generate && prisma migrate deploy && next build"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.8.2",
+    "@aws-sdk/client-s3": "^3.821.0",
+    "@aws-sdk/s3-request-presigner": "^3.821.0",
+    "argon2": "^0.44.0",
+    "browser-image-compression": "^2.0.2",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.468.0",
+    "jszip": "^3.10.1",
+    "next": "^15.3.3",
+    "pg": "^8.16.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "sharp": "^0.34.2",
+    "xlsx": "^0.18.5",
+    "zod": "^3.25.49"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.29",
+    "@types/pg": "^8.15.4",
+    "@types/react": "^19.1.6",
+    "@types/react-dom": "^19.1.6",
+    "eslint": "^9.28.0",
+    "eslint-config-next": "^15.3.3",
+    "prisma": "^6.8.2",
+    "tsx": "^4.19.4",
+    "typescript": "^5.8.3"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

@@ -1,0 +1,119 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum Role {
+  ADMIN
+  CONTRIBUTOR
+}
+enum ColumnType {
+  TEXT
+  NUMBER
+  CHOICE
+  DATE
+  BOOLEAN
+  LINK
+}
+enum EntityType {
+  IMAGE
+  SPECIES
+  USER
+  COLUMN
+}
+
+model User {
+  id String @id @default(cuid())
+  email String @unique
+  name String?
+  passwordHash String
+  role Role @default(CONTRIBUTOR)
+  disabledAt DateTime?
+  createdAt DateTime @default(now())
+  uploadedImages ImageRecord[] @relation("Uploader")
+  auditEntries AuditEntry[]
+}
+
+model Species {
+  id String @id @default(cuid())
+  category String
+  canonicalName String @unique
+  shortName String
+  localNames Json @default("[]")
+  features Json @default("{}")
+  habitat String @default("")
+  lookalikes Json @default("[]")
+  notes String @default("")
+  custom Json @default("{}")
+  version Int @default(1)
+  deletedAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  images ImageRecord[]
+}
+
+model ImageRecord {
+  id String @id @default(cuid())
+  category String
+  canonicalName String
+  shortName String
+  objectKey String
+  originalFileName String
+  question String @default("What fish is this?")
+  source String @default("")
+  origin String @default("")
+  creator String @default("")
+  license String @default("")
+  uploaderId String
+  uploadedAt DateTime @default(now())
+  speciesId String?
+  species Species? @relation(fields: [speciesId], references: [id], onDelete: SetNull)
+  uploader User @relation("Uploader", fields: [uploaderId], references: [id])
+  custom Json @default("{}")
+  phash String?
+  version Int @default(1)
+  deletedAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@index([canonicalName, deletedAt])
+  @@index([phash])
+}
+
+model ColumnDefinition {
+  id String @id @default(cuid())
+  entity EntityType
+  key String
+  label String
+  type ColumnType
+  choices Json @default("[]")
+  archivedAt DateTime?
+  createdAt DateTime @default(now())
+  @@unique([entity, key])
+}
+
+model AuditEntry {
+  id String @id @default(cuid())
+  actorId String
+  actor User @relation(fields: [actorId], references: [id])
+  entity EntityType
+  entityId String
+  action String
+  field String?
+  oldValue Json?
+  newValue Json?
+  undoneAt DateTime?
+  createdAt DateTime @default(now())
+  @@index([entity, entityId])
+  @@index([createdAt])
+}
+
+model LoginThrottle {
+  key String @id
+  count Int @default(0)
+  expiresAt DateTime
+}
