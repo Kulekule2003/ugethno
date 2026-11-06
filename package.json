@@ -10,6 +10,7 @@
     "db:deploy": "prisma migrate deploy",
     "db:seed": "tsx --env-file=.env prisma/seed.ts",
     "import:dataset": "tsx --env-file=.env scripts/import-dataset.ts",
+    "import:fisha": "tsx --env-file=.env scripts/import-fisha.ts",
     "test": "node --import tsx --test tests/security.test.ts tests/dataset.test.ts",
     "verify:dataset": "node --import tsx --test tests/security.test.ts tests/dataset.test.ts",
     "lint": "eslint .",
