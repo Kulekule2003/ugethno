@@ -5,3 +5,5 @@ docker-compose.yml
 Dockerfile
 .pnpm-store/
 import-report.json
+fisha1/
+import-fisha-report.json

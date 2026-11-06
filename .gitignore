@@ -9,3 +9,5 @@ uploads/
 coverage/
 *.tsbuildinfo
 next-env.d.ts
+import-report.json
+import-fisha-report.json

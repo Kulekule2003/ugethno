@@ -25,6 +25,7 @@ enum EntityType {
   SPECIES
   USER
   COLUMN
+  STORY
 }
 
 model User {
@@ -55,6 +56,7 @@ model Species {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   images ImageRecord[]
+  stories Story[]
 }
 
 model ImageRecord {
@@ -82,6 +84,21 @@ model ImageRecord {
   updatedAt DateTime @updatedAt
   @@index([canonicalName, deletedAt])
   @@index([phash])
+}
+
+// Storytelling question/answer pairs about a species or fishing site (text only, no image).
+model Story {
+  id String @id @default(cuid())
+  speciesId String
+  species Species @relation(fields: [speciesId], references: [id], onDelete: Cascade)
+  question String
+  answer String
+  source String @default("")
+  version Int @default(1)
+  deletedAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@index([speciesId, deletedAt])
 }
 
 model ColumnDefinition {
