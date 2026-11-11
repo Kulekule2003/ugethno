@@ -1,0 +1,1 @@
+ALTER TABLE "ImageRecord" ADD COLUMN "answer" TEXT NOT NULL DEFAULT '';

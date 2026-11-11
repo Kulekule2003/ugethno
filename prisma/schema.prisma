@@ -67,6 +67,8 @@ model ImageRecord {
   objectKey String
   originalFileName String
   question String @default("What fish is this?")
+  // Empty means the default answer derived from the short name (see src/lib/answers.ts).
+  answer String @default("")
   source String @default("")
   origin String @default("")
   creator String @default("")
